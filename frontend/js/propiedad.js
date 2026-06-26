@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000/api/propiedades';
+const API = '/api/propiedades';
 
 // Leer el ID del hash de la URL: propiedad.html#<id>
 const propId = window.location.hash.slice(1);

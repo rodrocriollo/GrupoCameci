@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndRender() {
         try {
             // Construir la URL con parámetros de búsqueda
-            const url = new URL('http://localhost:3000/api/propiedades');
+            const url = new URL('/api/propiedades', window.location.origin);
             if (currentTransaction !== 'all') {
                 url.searchParams.append('transaccion', currentTransaction);
             }
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const response = await fetch('http://localhost:3000/api/mensajes', {
+                const response = await fetch('/api/mensajes', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

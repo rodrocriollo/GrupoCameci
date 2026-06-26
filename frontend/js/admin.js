@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000/api/propiedades';
+const API = '/api/propiedades';
 
 // ── Referencias al DOM ──────────────────────────────────────────────────────
 const adminForm         = document.getElementById('adminForm');
@@ -428,7 +428,7 @@ confirmDeleteBtn.addEventListener('click', async () => {
 });
 
 // ── Referencias para la sección de Mensajes ──────────────────────────────
-const MSG_API = 'http://localhost:3000/api/mensajes';
+const MSG_API = '/api/mensajes';
 const mensajesList = document.getElementById('mensajesList');
 const mensajeCountBadge = document.getElementById('mensajeCountBadge');
 const modalDeleteTitle = modalEliminar.querySelector('h3');
