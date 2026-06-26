@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupo CAMECI</title>
+    <!-- Favicon -->
+    <link rel="icon" href="micrologo.png" type="image/png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS Personalizado -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="index.html"><img src="logo.png" alt="Logotipo Grupo CAMECI"></a>
+            </div>
+
+            <!-- Barra de búsqueda agregada -->
+            <div class="nav-search-container" id="navSearchContainer">
+                <div class="nav-search">
+                    <input type="text" id="globalSearch" placeholder="Busca propiedades, ciudad o estado..."
+                        autocomplete="off">
+                    <i class="fa-solid fa-xmark clear-search" id="clearSearch" style="display: none;"></i>
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                </div>
+                <div id="searchSuggestions" class="search-suggestions">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+
+            <nav class="nav-links">
+                <a href="#propiedades" class="active">Propiedades</a>
+                <a href="#servicios">Servicios</a>
+                <a href="#nosotros">Nosotros</a>
+                <a href="#contacto">Contacto</a>
+            </nav>
+            <div class="nav-actions" style="display: flex; gap: 10px;">
+                <a href="#" id="btnLoginAdmin" class="btn btn-secondary"
+                    style="background-color: #333; color: white;"><i class="fa-solid fa-user"></i> Log in</a>
+                <a href="https://wa.me/529903677229?text=¡Hola,%20Grupo%20CAMECI!%20Vi%20su%20página%20web%20y%20me%20interesa%20recibir%20información%20y%20asesoría%20sobre%20sus%20servicios.%20Me%20comunico%20para:%20"
+                    target="_blank" class="btn btn-primary"><i class="fa-brands fa-whatsapp"></i>Contáctanos!</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="container">
+
+        <!-- Vistas Dinámicas -->
+        <div id="vista-propiedades" class="vista active">
+            <!-- Sección Hero -->
+            <section class="header-section">
+                <h1>Encuentra tu próximo espacio con <br><span>Grupo CAMECI</span></h1>
+                <p>Explora nuestras mejores opciones de casas, terrenos y departamentos diseñados para tu estilo de
+                    vida.
+                </p>
+            </section>
+
+            <!-- Controles Intermitentes (Pestañas y Filtros) -->
+            <section class="controls-section">
+
+                <div class="tabs-wrapper">
+                    <div class="tabs">
+                        <button class="tab active" data-filter="all">Todos</button>
+                        <button class="tab" data-filter="renta">Para Renta</button>
+                        <button class="tab" data-filter="venta">Para Venta</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <h3>¿Qué tipo de propiedad buscas?</h3>
+                    <div class="radio-cards">
+
+                        <label class="radio-card">
+                            <input type="radio" name="tipo" value="all" checked>
+                            <div class="card-content">
+                                <i class="fa-solid fa-border-all"></i>
+                                <span>Todos</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="tipo" value="casa">
+                            <div class="card-content">
+                                <i class="fa-solid fa-house"></i>
+                                <span>Casa</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="tipo" value="terreno">
+                            <div class="card-content">
+                                <i class="fa-solid fa-map"></i>
+                                <span>Terreno</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="tipo" value="depto">
+                            <div class="card-content">
+                                <i class="fa-solid fa-building"></i>
+                                <span>Depto</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="tipo" value="local">
+                            <div class="card-content">
+                                <i class="fa-solid fa-shop"></i>
+                                <span>Comercial</span>
+                            </div>
+                        </label>
+
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Resultados: Cuadrícula Responsiva -->
+            <section class="properties-grid" id="display">
+                <!-- Las tarjetas se generan dinámicamente con JS -->
+
+            </section>
+        </div>
+
+        <!-- Sección Servicios -->
+        <div id="vista-servicios" class="vista">
+            <section class="content-section">
+                <h2 class="section-title">Servicios</h2>
+                <div class="services-container">
+                    <!-- Bloque 1: Avalúos para crédito e instituciones -->
+                    <div class="service-card">
+                        <div class="icon-wrapper"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <h3>Avalúos para crédito e instituciones</h3>
+                        <ul>
+                            <li>Avalúos para crédito INFONAVIT</li>
+                            <li>Avalúos para crédito FOVISSSTE</li>
+                            <li>Avalúos garantizados ante la SHF</li>
+                            <li>Avalúos bancarios (hipoteca y refinanciamiento)</li>
+                            <li>Avalúos para crédito BANJERCITO e ISSFAM</li>
+                            <li>Avalúos para Créditos de Terrenos (Crediterreno)</li>
+                        </ul>
+                    </div>
+                    <!-- Bloque 2: Avalúos comerciales y fiscales -->
+                    <div class="service-card">
+                        <div class="icon-wrapper"><i class="fa-solid fa-chart-line"></i></div>
+                        <h3>Avalúos comerciales y fiscales</h3>
+                        <p class="service-subtitle">Determinación de valor de mercado y efectos fiscales para:</p>
+                        <ul>
+                            <li>Casas habitación y departamentos</li>
+                            <li>Terrenos urbanos y rurales</li>
+                            <li>Locales y plazas comerciales</li>
+                            <li>Bodegas y naves industriales</li>
+                            <li>Propiedades en construcción</li>
+                            <li>Avalúos fiscales y catastrales</li>
+                            <li>Avalúos sobre enajenación de bienes</li>
+                        </ul>
+                    </div>
+                    <!-- Bloque 3: Avalúos legales y judiciales -->
+                    <div class="service-card">
+                        <div class="icon-wrapper"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <h3>Avalúos legales y judiciales</h3>
+                        <ul>
+                            <li>Avalúos para el Poder Judicial del Estado</li>
+                            <li>Dictámenes periciales judiciales</li>
+                            <li>Juicios sucesorios testamentarios</li>
+                            <li>Juicios sucesorios intestamentarios</li>
+                            <li>Avalúo e inventario de bienes</li>
+                            <li>Evaluación de inmuebles para seguros y fianzas</li>
+                        </ul>
+                    </div>
+                    <!-- Bloque 4: Ingeniería, topografía y trámites -->
+                    <div class="service-card">
+                        <div class="icon-wrapper"><i class="fa-solid fa-ruler-combined"></i></div>
+                        <h3>Ingeniería, topografía y trámites</h3>
+                        <ul>
+                            <li>Estudios de valor</li>
+                            <li>Planos topográficos con coordenadas UTM</li>
+                            <li>Peritaje y planos de apego y deslinde</li>
+                            <li>Planos arquitectónicos, diseño y construcción</li>
+                            <li>Análisis comparativo y opiniones de valor</li>
+                            <li>Avalúos para regularización de propiedades</li>
+                            <li>Actualización de avalúos y dictámenes técnicos</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="services-footer"><strong><em>“Todos nuestros avalúos cumplen con la normatividad vigente y son
+                            aceptados por instituciones financieras y organismos de vivienda.”</em></strong></p>
+            </section>
+        </div>
+
+        <!-- Sección Nosotros -->
+        <div id="vista-nosotros" class="vista">
+            <section class="content-section">
+                <h2 class="section-title">Nosotros</h2>
+                <div class="about-container">
+                    <div class="about-text">
+                        <p>Somos una oficina especializada en avalúos inmobiliarios con amplia experiencia en la
+                            valuación de bienes para fines crediticios, comerciales y legales.</p>
+                        <p>Contamos con peritos certificados y registrados ante las instituciones correspondientes, lo
+                            que garantiza que nuestros avalúos son válidos para trámites ante INFONAVIT, FOVISSSTE y
+                            diversas instituciones bancarias.</p>
+                        <p class="mission">Nuestra misión es brindar certeza y respaldo técnico a nuestros clientes en
+                            cada operación inmobiliaria.</p>
+                    </div>
+                    <div class="about-highlights">
+                        <h3>Nos distinguimos por:</h3>
+                        <ul>
+                            <li><i class="fa-solid fa-check-circle"></i> Precisión en la determinación del valor</li>
+                            <li><i class="fa-solid fa-check-circle"></i> Entrega oportuna</li>
+                            <li><i class="fa-solid fa-check-circle"></i> Atención personalizada</li>
+                            <li><i class="fa-solid fa-check-circle"></i> Transparencia en cada proceso</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sección Contacto -->
+        <div id="vista-contacto" class="vista">
+            <section class="content-section">
+                <h2 class="section-title">Contacto</h2>
+                <div class="contact-container">
+                    <div class="contact-info">
+                        <h3>Información básica:</h3>
+                        <ul>
+                            <li>
+                                <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
+                                <div>
+                                    <span>Teléfono / WhatsApp</span>
+                                    <strong>981-182-8725 / 981-160-2107</strong>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+                                <div>
+                                    <span>Correo electrónico</span>
+                                    <strong>avaluoscameci@gmail.com</strong>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+                                <div>
+                                    <span>Dirección</span>
+                                    <strong>C. 18 533, entre AV. LOPEZ PORTILLO Y 4 DE LA C. 18, Vicente Guerrero, 24035
+                                        San Francisco de Campeche, Camp.</strong>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="contact-icon"><i class="fa-regular fa-clock"></i></div>
+                                <div>
+                                    <span>Horario de atención</span>
+                                    <strong>9:00 am – 5:00 pm</strong>
+                                </div>
+                            </li>
+                        </ul>
+                        <p class="contact-cta"><strong><em>¿Necesitas un avalúo rápido y confiable? Contáctanos hoy
+                                    mismo y recibe asesoría sin compromiso.</em></strong></p>
+                    </div>
+                    <div class="contact-form-container">
+                        <h3>Envíanos un mensaje</h3>
+                        <form id="contactForm" class="contact-form">
+                            <div class="form-group">
+                                <label for="nombre">Nombre</label>
+                                <input type="text" id="nombre" name="nombre" placeholder="Tu nombre completo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="telefono">Teléfono</label>
+                                <input type="tel" id="telefono" name="telefono" placeholder="Tu número de teléfono"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="correo">Correo electrónico</label>
+                                <input type="email" id="correo" name="correo" placeholder="Tu correo electrónico"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="servicio">Tipo de servicio</label>
+                                <select id="servicio" name="servicio">
+                                    <option value="" disabled selected>Selecciona una opción</option>
+                                    <option value="Avalúos para crédito e instituciones">Avalúos para crédito e
+                                        instituciones</option>
+                                    <option value="Avalúos comerciales y fiscales">Avalúos comerciales y fiscales
+                                    </option>
+                                    <option value="Avalúos legales y judiciales">Avalúos legales y judiciales</option>
+                                    <option value="Ingeniería, topografía y trámites">Ingeniería, topografía y trámites
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ubicacion">Ubicación del inmueble</label>
+                                <input type="text" id="ubicacion" name="ubicacion" placeholder="Dirección o colonia"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="mensaje">Mensaje</label>
+                                <textarea id="mensaje" name="mensaje" rows="4" placeholder="¿En qué podemos ayudarte?"
+                                    required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Enviar Mensaje</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Contenedor para Notificaciones Toast -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Script de Funcionalidad -->
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>

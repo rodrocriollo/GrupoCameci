@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - CAMECI</title>
+    <!-- Favicon -->
+    <link rel="icon" href="micrologo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        @media (min-width: 1024px) {
+            .admin-layout {
+                grid-template-columns: 1.1fr 0.9fr;
+                align-items: start;
+            }
+        }
+
+        /* ── Formulario ── */
+        .admin-form-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            position: sticky;
+            top: 90px;
+        }
+        .admin-form-card .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            left: 0;
+            transform: none;
+            text-align: left;
+        }
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        .form-row .form-group { flex: 1; }
+        @media (max-width: 600px) {
+            .form-row { flex-direction: column; gap: 0; }
+        }
+        .btn-block { width: 100%; margin-top: 0.5rem; }
+        .btn-cancel {
+            width: 100%;
+            margin-top: 0.5rem;
+            background: transparent;
+            border: 2px solid var(--cameci-gray);
+            color: var(--cameci-gray);
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.7rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: none;
+        }
+        .btn-cancel:hover { background: #f0f0f0; }
+        .edit-mode-badge {
+            display: none;
+            background: rgba(255,107,0,0.1);
+            border: 1px solid var(--cameci-orange);
+            color: var(--cameci-orange);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* ── Lista de publicaciones ── */
+        .admin-list-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+        .admin-list-card .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            left: 0;
+            transform: none;
+            text-align: left;
+        }
+        .prop-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.8rem;
+            transition: all 0.2s;
+            background: var(--bg-color);
+        }
+        .prop-item:hover { border-color: var(--cameci-orange); box-shadow: var(--shadow-sm); }
+        .prop-item-img {
+            width: 72px;
+            height: 56px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #e2e8f0;
+        }
+        .prop-item-info { flex: 1; min-width: 0; }
+        .prop-item-info strong {
+            display: block;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .prop-item-info span {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+        .prop-item-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-venta { background: #fff3eb; color: var(--cameci-orange); }
+        .badge-renta { background: #e8f4f8; color: #2980b9; }
+        .prop-item-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-edit  { background: rgba(255,107,0,0.1); color: var(--cameci-orange); }
+        .btn-edit:hover  { background: var(--cameci-orange); color: white; }
+        .btn-delete { background: rgba(220,38,38,0.1); color: #dc2626; }
+        .btn-delete:hover { background: #dc2626; color: white; }
+        .list-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem 0;
+            font-size: 0.95rem;
+        }
+
+        /* Modal confirmación */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .modal-box i { font-size: 2.5rem; color: #dc2626; margin-bottom: 1rem; }
+        .modal-box h3 { margin-bottom: 0.5rem; }
+        .modal-box p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+
+        /* ── Gestor de imágenes premium ── */
+        .image-manager-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+            margin-top: 0.8rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border-color);
+        }
+        .image-thumb-card {
+            position: relative;
+            aspect-ratio: 4 / 3;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #e2e8f0;
+            cursor: pointer;
+        }
+        .image-thumb-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .image-thumb-card.is-thumbnail {
+            border-color: var(--cameci-orange);
+            box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2), var(--shadow-md);
+        }
+        .image-thumb-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-thumb-card .overlay-actions {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .image-thumb-card:hover .overlay-actions {
+            opacity: 1;
+        }
+        .image-thumb-card .action-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+        .image-thumb-card .action-btn.btn-star-thumb {
+            color: #d1d5db;
+        }
+        .image-thumb-card .action-btn.btn-star-thumb.active,
+        .image-thumb-card .action-btn.btn-star-thumb:hover {
+            color: var(--cameci-orange);
+            background: white;
+        }
+        .image-thumb-card .action-btn.btn-delete-thumb {
+            color: #ef4444;
+        }
+        .image-thumb-card .action-btn.btn-delete-thumb:hover {
+            background: #ef4444;
+            color: white;
+        }
+        .image-thumb-card .thumb-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            box-shadow: var(--shadow-sm);
+        }
+        .image-thumb-card .badge-primary-thumb {
+            background: var(--cameci-orange);
+            color: white;
+        }
+        .image-thumb-card .badge-new-thumb {
+            background: #10b981;
+            color: white;
+        }
+
+        /* ── Pestañas Admin ── */
+        .admin-nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.2rem;
+        }
+        .admin-tab-btn {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+            font-family: 'Outfit', sans-serif;
+        }
+        .admin-tab-btn:hover {
+            color: var(--cameci-orange);
+        }
+        .admin-tab-btn.active {
+            color: var(--cameci-orange);
+        }
+        .admin-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: var(--cameci-orange);
+            border-radius: 2px;
+        }
+        .badge-count {
+            background: #dc2626;
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.1rem 0.5rem;
+            border-radius: 50px;
+            margin-left: 0.3rem;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        /* ── Vistas Paneles ── */
+        .admin-panel {
+            display: none;
+        }
+        .admin-panel.active {
+            display: block;
+            animation: fadeInView 0.5s ease forwards;
+        }
+
+        /* ── Tarjetas de Mensajes ── */
+        .messages-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .messages-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .message-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 1.8rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .message-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--cameci-orange);
+        }
+        .message-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.8rem;
+        }
+        .message-client-info h3 {
+            font-size: 1.2rem;
+            margin: 0 0 0.2rem 0;
+            color: var(--text-primary);
+        }
+        .message-client-info span {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .message-card-body {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            flex-grow: 1;
+            white-space: pre-line;
+        }
+        .message-card-footer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.8rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .message-meta-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .msg-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            text-transform: uppercase;
+        }
+        .msg-badge-service {
+            background: rgba(255,107,0,0.08);
+            color: var(--cameci-orange);
+            border: 1px solid rgba(255,107,0,0.15);
+        }
+        .msg-badge-location {
+            background: rgba(41, 128, 185, 0.08);
+            color: #2980b9;
+            border: 1px solid rgba(41, 128, 185, 0.15);
+        }
+        .message-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-msg-call {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        .btn-msg-call:hover {
+            background: #10b981;
+            color: white;
+        }
+        .btn-msg-wa {
+            background: rgba(37, 211, 102, 0.1);
+            color: #25d366;
+        }
+        .btn-msg-wa:hover {
+            background: #25d366;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="index.html"><img src="logo.png" alt="Logotipo Grupo CAMECI"></a>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Volver al Inicio</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- Pestañas de Navegación del Administrador -->
+        <nav class="admin-nav-tabs">
+            <button class="admin-tab-btn active" data-panel="propiedades">
+                <i class="fa-solid fa-house-chimney"></i> Propiedades
+            </button>
+            <button class="admin-tab-btn" data-panel="mensajes">
+                <i class="fa-solid fa-envelope"></i> Mensajes Recibidos
+                <span id="mensajeCountBadge" class="badge-count" style="display: none;">0</span>
+            </button>
+        </nav>
+
+        <!-- PANEL DE PROPIEDADES -->
+        <div id="panel-propiedades" class="admin-panel active">
+            <div class="admin-layout">
+
+            <!-- ═══ FORMULARIO (Crear / Editar) ═══ -->
+            <div class="admin-form-card">
+                <div class="edit-mode-badge" id="editModeBadge">
+                    <i class="fa-solid fa-pen-to-square"></i> Modo Edición — modificando publicación
+                </div>
+                <h2 class="section-title" id="formTitle">Subir Nueva Propiedad</h2>
+                <form id="adminForm" class="contact-form">
+                    <input type="hidden" id="editingId">
+
+                    <div class="form-group">
+                        <label for="titulo">Título de la Propiedad</label>
+                        <input type="text" id="titulo" name="titulo" placeholder="Ej. Casa moderna en el centro" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="precio">Precio</label>
+                            <input type="text" id="precio" name="_precio_display" placeholder="Ej. $2,500,000" required autocomplete="off">
+                            <input type="hidden" id="precioRaw" name="precio">
+                        </div>
+                        <div class="form-group">
+                            <label for="contacto">Número de Contacto</label>
+                            <input type="tel" id="contacto" name="contacto" placeholder="Teléfono o WhatsApp" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado" required>
+                                <option value="" disabled selected>Selecciona un estado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="municipio">Municipio</label>
+                            <select id="municipio" name="municipio" required disabled>
+                                <option value="" disabled selected>Primero selecciona un estado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ubicacion">Ubicación (Colonia, Calle, etc.)</label>
+                        <input type="text" id="ubicacion" name="ubicacion" placeholder="Dirección o zona" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="detalles">Detalles del predio / Créditos aceptados</label>
+                        <textarea id="detalles" name="detalles" rows="4" placeholder="Agrega información adicional, ventajas del predio o si aceptas crédito hipotecario, infonavit, fovissste, etc."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transaccion">Tipo de Transacción</label>
+                            <select id="transaccion" name="transaccion" required>
+                                <option value="" disabled selected>Selecciona una opción</option>
+                                <option value="venta">Para Venta</option>
+                                <option value="renta">Para Renta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tipo">Clasificación</label>
+                            <select id="tipo" name="tipo" required>
+                                <option value="" disabled selected>Selecciona una opción</option>
+                                <option value="casa">Casa Habitacional</option>
+                                <option value="depto">Departamento</option>
+                                <option value="terreno">Terreno</option>
+                                <option value="local">Local Comercial</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row" id="camposVenta" style="display: none;">
+                        <div class="form-group">
+                            <label for="moneda">Moneda (Solo Ventas)</label>
+                            <select id="moneda" name="moneda">
+                                <option value="MXN" selected>MXN - Pesos Mexicanos ($)</option>
+                                <option value="USD">USD - Dólares ($)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="camposCasaDepto" style="display: none;">
+                        <h3 style="margin-bottom: 1rem; color: var(--cameci-blue);">Características (Casa / Depto)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="habitaciones">Número de Habitaciones</label>
+                                <input type="number" id="habitaciones" name="habitaciones" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="banos">Número de Baños</label>
+                                <input type="number" id="banos" name="banos" step="0.5" min="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="metrosConstruccion">Metros de Construcción (m²)</label>
+                                <input type="number" id="metrosConstruccion" name="metrosConstruccion" min="0">
+                            </div>
+                            <div class="form-group" id="groupTerrenoCasa">
+                                <label for="metrosTerrenoCasa">Metros de Terreno (m²)</label>
+                                <input type="number" id="metrosTerrenoCasa" name="metrosTerrenoCasa" min="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tieneGarage">¿Cuenta con Garage?</label>
+                            <select id="tieneGarage" name="tieneGarage">
+                                <option value="false" selected>No</option>
+                                <option value="true">Sí</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tienePatio">¿Cuenta con Patio Independiente?</label>
+                            <select id="tienePatio" name="tienePatio">
+                                <option value="false" selected>No</option>
+                                <option value="true">Sí</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row optional-fields" id="camposTerreno" style="display:none;">
+                        <div class="form-group">
+                            <label for="metrosTerrenoSolo">Metros de Terreno (m²)</label>
+                            <input type="number" id="metrosTerrenoSolo" name="metrosTerrenoSolo" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="servicios">¿Cuenta con servicios básicos?</label>
+                            <select id="servicios" name="servicios">
+                                <option value="true">Sí</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos específicos Locales -->
+                    <div id="camposLocal" style="display: none;">
+                        <h3 style="margin-bottom: 1rem; color: var(--cameci-blue);">Características (Local Comercial)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="metrosConstruccionLocal">Metros de Construcción (m²)</label>
+                                <input type="number" id="metrosConstruccionLocal" name="metrosConstruccionLocal" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="banosLocal">Número de Baños</label>
+                                <input type="number" id="banosLocal" name="banosLocal" step="0.5" min="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="estacionamiento">Estacionamiento (Ej. 2 cajones, No tiene, etc.)</label>
+                            <input type="text" id="estacionamiento" name="estacionamiento" placeholder="Detalles de estacionamiento">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fotos">Fotos de la Propiedad</label>
+                        <input type="file" id="fotos" name="fotos" accept="image/*" multiple>
+                        <small id="fotosHelp">Puedes seleccionar múltiples imágenes a la vez.</small>
+                    </div>
+
+                    <div class="form-group" id="imageManagerGroup" style="display: none; margin-top: 1rem; margin-bottom: 1.5rem;">
+                        <label>Gestión de Fotos y Miniatura Principal</label>
+                        <div id="imageGrid" class="image-manager-grid"></div>
+                        <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem; font-size: 0.82rem;">
+                            <i class="fa-solid fa-circle-info"></i> Haz clic en la estrella (<i class="fa-solid fa-star" style="color:var(--cameci-orange)"></i>) para elegir la miniatura principal que se mostrará en la página principal.
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Subir Propiedad
+                    </button>
+                    <button type="button" class="btn-cancel" id="cancelEditBtn">
+                        <i class="fa-solid fa-xmark"></i> Cancelar Edición
+                    </button>
+                </form>
+                <div id="mensajeResultado" style="margin-top: 16px; font-weight: 600; text-align: center; font-size: 0.95rem;"></div>
+            </div>
+
+            <!-- ═══ LISTA DE PUBLICACIONES ═══ -->
+            <div class="admin-list-card">
+                <h2 class="section-title">Mis Publicaciones</h2>
+                <div id="propiedadesList">
+                    <p class="list-empty"><i class="fa-solid fa-spinner fa-spin"></i> Cargando publicaciones...</p>
+                </div>
+            </div>
+
+            </div>
+        </div>
+
+        <!-- PANEL DE MENSAJES RECIBIDOS -->
+        <div id="panel-mensajes" class="admin-panel">
+            <h2 class="section-title" style="left:0; transform:none; text-align:left; font-size:1.6rem; margin-bottom:1.5rem;">Bandeja de Entrada</h2>
+            <div id="mensajesList" class="messages-grid">
+                <p class="list-empty"><i class="fa-solid fa-spinner fa-spin"></i> Cargando mensajes...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal confirmación de eliminación -->
+    <div class="modal-overlay" id="modalEliminar">
+        <div class="modal-box">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h3>¿Eliminar publicación?</h3>
+            <p>Esta acción es permanente. La publicación desaparecerá del sitio.</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="confirmDeleteBtn" style="background:#dc2626; box-shadow:none;">
+                    <i class="fa-solid fa-trash"></i> Sí, eliminar
+                </button>
+                <button class="btn btn-outline" id="cancelDeleteBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/estados-municipios.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

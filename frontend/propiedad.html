@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Propiedad - Grupo CAMECI</title>
+    <!-- Favicon -->
+    <link rel="icon" href="micrologo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Layout general ── */
+        .detail-container {
+            max-width: 1500px;
+            margin: 2rem auto;
+            padding: 0 1.5rem 5rem;
+        }
+
+        /* ── Breadcrumb ── */
+        .breadcrumb {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .breadcrumb a { color: var(--cameci-orange); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* ── Título principal ── */
+        .detail-title {
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+            color: var(--cameci-dark);
+            letter-spacing: -0.5px;
+        }
+        .detail-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.8rem;
+        }
+        .detail-badge {
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .badge-venta { background: var(--cameci-orange); color: white; }
+        .badge-renta { background: #2980b9; color: white; }
+        .badge-tipo  { background: var(--bg-color); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+        /* ══════════════════════════════════════════════
+           GRID PRINCIPAL — columnas estables
+           Desktop: galería | panel info
+           Móvil:   columna única
+        ══════════════════════════════════════════════ */
+        .detail-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        @media (min-width: 900px) {
+            .detail-grid {
+                flex-direction: row;
+                align-items: flex-start;
+                gap: 2rem;
+            }
+            .gallery-section {
+                flex: 1 1 0;
+                min-width: 0;
+            }
+            .info-panel {
+                flex: 0 0 360px;
+                width: 360px;
+                max-width: 360px;
+                position: sticky;
+                top: 110px;
+                align-self: start;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .info-panel {
+                flex: 0 0 400px;
+                width: 400px;
+                max-width: 400px;
+            }
+        }
+
+        /* ══════════════════════════════════════════════
+           GALERÍA — imagen principal
+        ══════════════════════════════════════════════ */
+        .gallery-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .gallery-main {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #0d0d0d;
+            flex-shrink: 0;
+        }
+        .gallery-main img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: opacity 0.22s ease;
+        }
+        .gallery-main img.fade-out { opacity: 0; }
+
+        /* Flechas de navegación sobre la imagen principal */
+        .gallery-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 50%;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .gallery-arrow:hover {
+            background: var(--cameci-orange);
+            transform: translateY(-50%) scale(1.08);
+        }
+        .gallery-arrow.prev { left: 12px; }
+        .gallery-arrow.next { right: 12px; }
+
+        /* Contador */
+        .gallery-counter {
+            position: absolute;
+            bottom: 12px;
+            right: 14px;
+            background: rgba(0, 0, 0, 0.65);
+            color: white;
+            font-size: 0.78rem;
+            padding: 0.22rem 0.7rem;
+            border-radius: 50px;
+            font-weight: 600;
+            z-index: 10;
+            letter-spacing: 0.5px;
+        }
+
+        /* ══════════════════════════════════════════════
+           TIRA DE MINIATURAS — estilo Steam
+           Altura FIJA. Scroll horizontal con botones.
+        ══════════════════════════════════════════════ */
+        .gallery-strip-outer {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 82px;
+            flex-shrink: 0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: rgba(0,0,0,0.04);
+        }
+
+        /* Botones prev/next de la tira */
+        .strip-nav-btn {
+            flex: 0 0 30px;
+            height: 100%;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, color 0.2s;
+            z-index: 5;
+        }
+        .strip-nav-btn:hover { background: var(--cameci-orange); color: white; }
+        .strip-nav-btn:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+
+        /* Máscara con overflow hidden (oculta el scroll nativo) */
+        .gallery-strip-mask {
+            flex: 1 1 0;
+            min-width: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* La tira real con scroll interno */
+        .gallery-strip {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 6px;
+            height: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            padding: 6px 4px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--cameci-orange) transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+        .gallery-strip::-webkit-scrollbar { height: 3px; }
+        .gallery-strip::-webkit-scrollbar-track { background: transparent; }
+        .gallery-strip::-webkit-scrollbar-thumb { background: var(--cameci-orange); border-radius: 2px; }
+
+        /* Cada miniatura — tamaño FIJO, no se deforma */
+        .gallery-thumb {
+            flex: 0 0 120px;
+            width: 120px;
+            height: 68px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2.5px solid transparent;
+            transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+            background: #1a1a1a;
+        }
+        .gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+        .gallery-thumb:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,107,0,0.55);
+        }
+        /* Miniatura activa — glow estilo Steam */
+        .gallery-thumb.active {
+            border-color: var(--cameci-orange);
+            box-shadow:
+                0 0 0 1px var(--cameci-orange),
+                0 0 10px rgba(255, 107, 0, 0.45),
+                0 0 22px rgba(255, 107, 0, 0.18);
+        }
+
+        /* ══════════════════════════════════════════════
+           PANEL DE INFORMACIÓN — nunca se deforma
+        ══════════════════════════════════════════════ */
+        .info-panel {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            width: 100%;
+        }
+        .info-price-header {
+            background: linear-gradient(135deg, var(--cameci-orange), #e05e00);
+            color: white;
+            padding: 1.5rem 1.8rem;
+        }
+        .info-price-header .label {
+            font-size: 0.82rem;
+            opacity: 0.85;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .info-price-header .price {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            margin-top: 0.2rem;
+            line-height: 1;
+        }
+        .info-price-header .per { font-size: 1rem; font-weight: 600; opacity: 0.8; }
+        .info-body { padding: 1.5rem 1.8rem; }
+
+        /* Especificaciones */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .spec-item {
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+            padding: 0.9rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+        .spec-item i { color: var(--cameci-orange); font-size: 1.15rem; width: 20px; text-align: center; }
+        .spec-item div { display: flex; flex-direction: column; }
+        .spec-item .spec-val { font-weight: 700; font-size: 1rem; color: var(--text-primary); }
+        .spec-item .spec-lbl { font-size: 0.78rem; color: var(--text-secondary); }
+
+        /* Ubicación */
+        .info-location {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            padding: 1rem;
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.2rem;
+            font-size: 0.92rem;
+            color: var(--text-primary);
+        }
+        .info-location i { color: var(--cameci-orange); margin-top: 2px; flex-shrink: 0; }
+
+        /* Descripción con mostrar más */
+        .description-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            padding: 0.7rem 0.85rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .description-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            padding: 0 0.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .description-header h3 {
+            margin: 0;
+            font-size: 1.02rem;
+            font-weight: 800;
+            color: var(--cameci-dark);
+        }
+        .desc-toggle {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            padding: 0.25rem;
+        }
+        .description-content {
+            background: #f7f8fc;
+            border: 1px solid rgba(255,107,0,0.08);
+            border-radius: var(--radius-sm);
+            padding: 0.9rem 0.95rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 0.92rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            text-align: justify;
+            text-align-last: left;
+            max-height: 120px;
+            overflow: hidden;
+            transition: max-height 0.28s ease;
+        }
+        .description-content.expanded { max-height: 1000px; overflow: auto; }
+        .show-more {
+            display: inline-block;
+            margin-top: 0.6rem;
+            color: var(--cameci-orange);
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* CTA WhatsApp / Llamada */
+        .btn-whatsapp {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.9rem;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.25s, transform 0.2s;
+            box-shadow: 0 6px 18px rgba(37,211,102,0.3);
+            margin-bottom: 0.7rem;
+        }
+        .btn-whatsapp:hover { background: #1ebe5b; transform: translateY(-2px); }
+        .btn-call {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.85rem;
+            background: transparent;
+            color: var(--cameci-orange);
+            border: 2px solid var(--cameci-orange);
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s;
+        }
+        .btn-call:hover { background: var(--cameci-orange); color: white; }
+
+        /* Loading / Error */
+        .loading-box, .error-box {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+        .loading-box i { font-size: 2.5rem; color: var(--cameci-orange); margin-bottom: 1rem; display: block; }
+        .error-box i   { font-size: 2.5rem; color: #dc2626; margin-bottom: 1rem; display: block; }
+
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="index.html"><img src="logo.png" alt="Logotipo Grupo CAMECI"></a>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">← Volver a Propiedades</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="detail-container" id="detailContainer">
+        <!-- Se renderiza dinámicamente -->
+        <div class="loading-box">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>Cargando información de la propiedad…</p>
+        </div>
+    </div>
+
+    <script src="js/propiedad.js"></script>
+</body>
+</html>
