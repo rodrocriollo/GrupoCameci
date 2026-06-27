@@ -4,10 +4,10 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const Propiedad = require('./models/Propiedad');
 const Mensaje = require('./models/Mensaje');
 const nodemailer = require('nodemailer');
+const { uploadFileToR2 } = require('./services/r2Service');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -20,24 +20,10 @@ const transporter = nodemailer.createTransport({
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const dir = path.join(__dirname, 'uploads');
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
-        }
-        cb(null, dir)
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        const ext = file.originalname.split('.').pop() || 'jpg';
-        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + ext)
-    }
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const PORT = process.env.PORT || 3000;
@@ -85,7 +71,8 @@ app.post('/api/propiedades', upload.array('fotos', 10), async (req, res) => {
 
         let imageUrls = [];
         if (req.files && req.files.length > 0) {
-            imageUrls = req.files.map(file => `http://localhost:${PORT}/uploads/${file.filename}`);
+            const uploadPromises = req.files.map(file => uploadFileToR2(file.buffer, file.originalname));
+            imageUrls = await Promise.all(uploadPromises);
         }
 
         // Determinar miniatura principal elegida
@@ -175,7 +162,8 @@ app.put('/api/propiedades/:id', upload.array('fotos', 10), async (req, res) => {
         // Obtener fotos nuevas subidas
         let newImageUrls = [];
         if (req.files && req.files.length > 0) {
-            newImageUrls = req.files.map(file => `http://localhost:${PORT}/uploads/${file.filename}`);
+            const uploadPromises = req.files.map(file => uploadFileToR2(file.buffer, file.originalname));
+            newImageUrls = await Promise.all(uploadPromises);
         }
 
         // Si se envió la lista de imagenes a mantener o se subieron nuevas fotos
