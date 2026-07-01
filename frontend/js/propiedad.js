@@ -1,4 +1,5 @@
-const API = '/api/propiedades';
+const API_BASE = window.API_BASE || '';
+const API = `${API_BASE}/api/propiedades`;
 
 // Leer el ID del hash de la URL: propiedad.html#<id>
 const propId = window.location.hash.slice(1);

@@ -1,5 +1,7 @@
 import { Casa, Departamento, Terreno, LocalComercial } from './clases.js';
 
+const API_BASE = window.API_BASE || '';
+
 document.addEventListener('DOMContentLoaded', () => {
     const display = document.getElementById('display');
     const tabs = document.querySelectorAll('.tab');
@@ -16,7 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndRender() {
         try {
             // Construir la URL con parámetros de búsqueda
-            const url = new URL('/api/propiedades', window.location.origin);
+            const base = API_BASE || window.location.origin;
+            const url = new URL('/api/propiedades', base);
             if (currentTransaction !== 'all') {
                 url.searchParams.append('transaccion', currentTransaction);
             }
@@ -336,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const response = await fetch('/api/mensajes', {
+                const response = await fetch(`${API_BASE}/api/mensajes`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

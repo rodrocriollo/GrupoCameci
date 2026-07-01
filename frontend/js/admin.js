@@ -1,4 +1,5 @@
-const API = '/api/propiedades';
+const API_BASE = window.API_BASE || '';
+const API = `${API_BASE}/api/propiedades`;
 
 // ── Referencias al DOM ──────────────────────────────────────────────────────
 const adminForm         = document.getElementById('adminForm');
@@ -428,7 +429,7 @@ confirmDeleteBtn.addEventListener('click', async () => {
 });
 
 // ── Referencias para la sección de Mensajes ──────────────────────────────
-const MSG_API = '/api/mensajes';
+const MSG_API = `${API_BASE}/api/mensajes`;
 const mensajesList = document.getElementById('mensajesList');
 const mensajeCountBadge = document.getElementById('mensajeCountBadge');
 const modalDeleteTitle = modalEliminar.querySelector('h3');

@@ -1,0 +1,23 @@
+name = "grupocameci"
+main = "src/index.js"
+compatibility_date = "2025-03-20"
+compatibility_flags = ["nodejs_compat"]
+
+# ── R2 Bucket Binding ──
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "grupocameci-imagenes"
+
+# ── Variables de entorno (no sensibles) ──
+[vars]
+R2_PUBLIC_URL = "https://imagenes.grupocameci.com"
+EMAIL_TO = "contacto.grupocameci@gmail.com"
+
+# ── Secrets (se configuran con: npx wrangler secret put <NOMBRE>) ──
+# MONGO_URI     → tu connection string de MongoDB Atlas
+# RESEND_API_KEY → tu API Key de Resend
+
+# ── Routes (descomentar cuando el dominio esté en Cloudflare DNS) ──
+# routes = [
+#   { pattern = "grupocameci.com/api/*", zone_name = "grupocameci.com" }
+# ]
