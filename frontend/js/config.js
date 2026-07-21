@@ -10,7 +10,7 @@
  *    la ruta del Worker (routes en wrangler.toml), cambia API_BASE a '' (vacío)
  *    para usar rutas relativas.
  */
-window.API_BASE = '';
+window.API_BASE = 'https://grupocameci.avaluoscameci.workers.dev';
 // ↑ Dejar vacío '' cuando el dominio esté configurado con Workers routing.
 // ↑ Poner la URL completa del Worker (ej. 'https://grupocameci.xxx.workers.dev') 
 //   mientras se use workers.dev sin dominio propio.
