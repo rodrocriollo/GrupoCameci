@@ -28,4 +28,12 @@ app.all('/api/*', (c) => {
   return c.json({ message: 'Ruta no encontrada' }, 404);
 });
 
+// ── Servir archivos estáticos del frontend ──
+app.get('*', async (c) => {
+  if (c.env.ASSETS) {
+    return c.env.ASSETS.fetch(c.req.raw);
+  }
+  return c.text('No se encontraron los archivos estáticos en ASSETS', 404);
+});
+
 export default app;

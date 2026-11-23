@@ -1,10 +1,8 @@
 import { Hono } from 'hono';
-import { getCollection, ObjectId } from '../db.js';
+import { eq, and, desc } from 'drizzle-orm';
+import { getDb, propiedades } from '../db/index.js';
 
 export const propiedadesRouter = new Hono();
-
-// ── Colección en MongoDB (creada por Mongoose como 'propiedads') ──
-const COLLECTION = 'propiedads';
 
 // ── Helper: subir archivo a R2 ──
 async function uploadToR2(env, file) {
@@ -33,9 +31,30 @@ function parseBool(val) {
 
 // ── Helper: parsear entero opcional ──
 function parseOptionalInt(val) {
-  if (val === undefined || val === null || val === '') return undefined;
+  if (val === undefined || val === null || val === '') return null;
   const n = parseInt(val, 10);
-  return isNaN(n) ? undefined : n;
+  return isNaN(n) ? null : n;
+}
+
+// ── Helper: formatear salida para garantizar retrocompatibilidad con frontend (_id) ──
+function formatPropiedad(p) {
+  if (!p) return null;
+  let imgs = [];
+  if (Array.isArray(p.imagenes)) {
+    imgs = p.imagenes;
+  } else if (typeof p.imagenes === 'string') {
+    try {
+      imgs = JSON.parse(p.imagenes);
+    } catch {
+      imgs = [];
+    }
+  }
+
+  return {
+    ...p,
+    _id: p.id.toString(),
+    imagenes: imgs,
+  };
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -44,18 +63,23 @@ function parseOptionalInt(val) {
 propiedadesRouter.get('/', async (c) => {
   try {
     const { transaccion, tipo } = c.req.query();
-    const query = {};
+    const conditions = [];
 
     if (transaccion && transaccion !== 'all') {
-      query.transaccion = transaccion;
+      conditions.push(eq(propiedades.transaccion, transaccion));
     }
     if (tipo && tipo !== 'all') {
-      query.tipo = tipo;
+      conditions.push(eq(propiedades.tipo, tipo));
     }
 
-    const collection = await getCollection(c.env, COLLECTION);
-    const propiedades = await collection.find(query).toArray();
-    return c.json(propiedades);
+    const db = getDb(c.env.DB);
+    let query = db.select().from(propiedades).orderBy(desc(propiedades.createdAt));
+    if (conditions.length > 0) {
+      query = db.select().from(propiedades).where(and(...conditions)).orderBy(desc(propiedades.createdAt));
+    }
+
+    const rows = await query.all();
+    return c.json(rows.map(formatPropiedad));
   } catch (error) {
     console.error('Error al obtener propiedades:', error);
     return c.json({ message: 'Error al obtener propiedades', error: error.message }, 500);
@@ -92,19 +116,19 @@ propiedadesRouter.post('/', async (c) => {
       }
     }
 
-    const now = new Date();
-    const nuevaPropiedad = {
+    const nuevaPropiedadData = {
       titulo: body.titulo,
       precio: body.precio,
       ubicacion: body.ubicacion,
-      estado: body.estado,
-      municipio: body.municipio,
+      estado: body.estado || null,
+      municipio: body.municipio || null,
       transaccion: body.transaccion,
       tipo: body.tipo,
-      contacto: body.contacto,
-      detalles: body.detalles || undefined,
+      contacto: body.contacto || null,
+      detalles: body.detalles || null,
       imagen: selectedImagen,
       imagenes: imageUrls,
+      moneda: body.transaccion === 'venta' ? (body.moneda || 'MXN') : 'MXN',
       habitaciones: parseOptionalInt(body.habitaciones),
       banos: parseOptionalInt(body.banos),
       metrosConstruccion: parseOptionalInt(body.metrosConstruccion),
@@ -112,27 +136,15 @@ propiedadesRouter.post('/', async (c) => {
       servicios: parseBool(body.servicios),
       tieneGarage: parseBool(body.tieneGarage),
       tienePatio: parseBool(body.tienePatio),
-      estacionamiento: body.estacionamiento || undefined,
-      createdAt: now,
-      updatedAt: now,
+      estacionamiento: body.estacionamiento || null,
     };
 
-    // Solo agregar moneda en ventas
-    if (body.transaccion === 'venta') {
-      nuevaPropiedad.moneda = body.moneda || 'MXN';
-    }
-
-    // Limpiar campos undefined para no almacenarlos
-    Object.keys(nuevaPropiedad).forEach(key => {
-      if (nuevaPropiedad[key] === undefined) delete nuevaPropiedad[key];
-    });
-
-    const collection = await getCollection(c.env, COLLECTION);
-    const result = await collection.insertOne(nuevaPropiedad);
+    const db = getDb(c.env.DB);
+    const [nuevaPropiedad] = await db.insert(propiedades).values(nuevaPropiedadData).returning();
 
     return c.json({
       message: 'Propiedad creada exitosamente',
-      propiedad: { ...nuevaPropiedad, _id: result.insertedId },
+      propiedad: formatPropiedad(nuevaPropiedad),
     }, 201);
   } catch (error) {
     console.error('Error al crear propiedad:', error);
@@ -145,15 +157,20 @@ propiedadesRouter.post('/', async (c) => {
 // ════════════════════════════════════════════════════════════════════════════
 propiedadesRouter.get('/:id', async (c) => {
   try {
-    const id = c.req.param('id');
-    const collection = await getCollection(c.env, COLLECTION);
-    const propiedad = await collection.findOne({ _id: new ObjectId(id) });
+    const idParam = c.req.param('id');
+    const id = parseInt(idParam, 10);
+    if (isNaN(id)) {
+      return c.json({ message: 'ID de propiedad inválido' }, 400);
+    }
+
+    const db = getDb(c.env.DB);
+    const [propiedad] = await db.select().from(propiedades).where(eq(propiedades.id, id)).limit(1);
 
     if (!propiedad) {
       return c.json({ message: 'Propiedad no encontrada' }, 404);
     }
 
-    return c.json(propiedad);
+    return c.json(formatPropiedad(propiedad));
   } catch (error) {
     console.error('Error al obtener propiedad:', error);
     return c.json({ message: 'Error al obtener la propiedad', error: error.message }, 500);
@@ -165,19 +182,24 @@ propiedadesRouter.get('/:id', async (c) => {
 // ════════════════════════════════════════════════════════════════════════════
 propiedadesRouter.put('/:id', async (c) => {
   try {
-    const id = c.req.param('id');
+    const idParam = c.req.param('id');
+    const id = parseInt(idParam, 10);
+    if (isNaN(id)) {
+      return c.json({ message: 'ID de propiedad inválido' }, 400);
+    }
+
     const body = await c.req.parseBody({ all: true });
 
     const updateData = {
       titulo: body.titulo,
       precio: body.precio,
       ubicacion: body.ubicacion,
-      estado: body.estado,
-      municipio: body.municipio,
+      estado: body.estado || null,
+      municipio: body.municipio || null,
       transaccion: body.transaccion,
       tipo: body.tipo,
-      contacto: body.contacto,
-      detalles: body.detalles || undefined,
+      contacto: body.contacto || null,
+      detalles: body.detalles || null,
       habitaciones: parseOptionalInt(body.habitaciones),
       banos: parseOptionalInt(body.banos),
       metrosConstruccion: parseOptionalInt(body.metrosConstruccion),
@@ -185,11 +207,10 @@ propiedadesRouter.put('/:id', async (c) => {
       servicios: parseBool(body.servicios),
       tieneGarage: parseBool(body.tieneGarage),
       tienePatio: parseBool(body.tienePatio),
-      estacionamiento: body.estacionamiento || undefined,
-      updatedAt: new Date(),
+      estacionamiento: body.estacionamiento || null,
+      updatedAt: new Date().toISOString(),
     };
 
-    // Solo agregar moneda en ventas
     if (body.transaccion === 'venta') {
       updateData.moneda = body.moneda || 'MXN';
     }
@@ -201,7 +222,6 @@ propiedadesRouter.put('/:id', async (c) => {
       newImageUrls = await Promise.all(fotos.map(f => uploadToR2(c.env, f)));
     }
 
-    // Parsear imágenes existentes a conservar
     if (body.imagenes !== undefined || newImageUrls.length > 0) {
       let imagenesExistentes = [];
       if (body.imagenes) {
@@ -209,17 +229,14 @@ propiedadesRouter.put('/:id', async (c) => {
           imagenesExistentes = typeof body.imagenes === 'string'
             ? JSON.parse(body.imagenes)
             : body.imagenes;
-        } catch (e) {
-          // Fallback: separar por comas
+        } catch {
           imagenesExistentes = body.imagenes.split(',').map(s => s.trim()).filter(Boolean);
         }
       }
 
-      // Combinar existentes + nuevas
       const todasLasImagenes = [...imagenesExistentes, ...newImageUrls];
       updateData.imagenes = todasLasImagenes;
 
-      // Determinar miniatura principal
       let selectedImagen = todasLasImagenes[0] || 'https://via.placeholder.com/600';
       if (body.imagen) {
         if (typeof body.imagen === 'string' && body.imagen.startsWith('index_')) {
@@ -234,23 +251,17 @@ propiedadesRouter.put('/:id', async (c) => {
       updateData.imagen = selectedImagen;
     }
 
-    // Limpiar campos undefined
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] === undefined) delete updateData[key];
-    });
+    const db = getDb(c.env.DB);
+    const [updated] = await db.update(propiedades)
+      .set(updateData)
+      .where(eq(propiedades.id, id))
+      .returning();
 
-    const collection = await getCollection(c.env, COLLECTION);
-    const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { $set: updateData },
-      { returnDocument: 'after' }
-    );
-
-    if (!result) {
+    if (!updated) {
       return c.json({ message: 'Propiedad no encontrada' }, 404);
     }
 
-    return c.json({ message: 'Propiedad actualizada exitosamente', propiedad: result });
+    return c.json({ message: 'Propiedad actualizada exitosamente', propiedad: formatPropiedad(updated) });
   } catch (error) {
     console.error('Error al actualizar propiedad:', error);
     return c.json({ message: 'Error al actualizar la propiedad', error: error.message }, 500);
@@ -262,11 +273,16 @@ propiedadesRouter.put('/:id', async (c) => {
 // ════════════════════════════════════════════════════════════════════════════
 propiedadesRouter.delete('/:id', async (c) => {
   try {
-    const id = c.req.param('id');
-    const collection = await getCollection(c.env, COLLECTION);
-    const result = await collection.findOneAndDelete({ _id: new ObjectId(id) });
+    const idParam = c.req.param('id');
+    const id = parseInt(idParam, 10);
+    if (isNaN(id)) {
+      return c.json({ message: 'ID de propiedad inválido' }, 400);
+    }
 
-    if (!result) {
+    const db = getDb(c.env.DB);
+    const [deleted] = await db.delete(propiedades).where(eq(propiedades.id, id)).returning();
+
+    if (!deleted) {
       return c.json({ message: 'Propiedad no encontrada' }, 404);
     }
 

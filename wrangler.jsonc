@@ -1,14 +1,35 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "grupocameci",
-  "compatibility_date": "2026-06-28",
-  "observability": {
-    "enabled": true
-  },
-  "assets": {
-    "directory": "frontend"
-  },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "grupocameci",
+	"main": "worker/index.js",
+	"compatibility_date": "2026-06-28",
+	"observability": {
+		"enabled": true
+	},
+	"assets": {
+		"directory": "frontend",
+		"binding": "ASSETS"
+	},
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "cameci-db",
+			"database_id": "70e6bf0b-a956-45dc-800c-3eb8e34c39b6",
+			"migrations_dir": "worker/drizzle/migrations",
+			"remote": true
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "R2_BUCKET",
+			"bucket_name": "grupocameci-imagenes"
+		}
+	],
+	"vars": {
+		"R2_PUBLIC_URL": "https://imagenes.grupocameci.com",
+		"EMAIL_TO": "contacto.grupocameci@gmail.com"
+	}
 }

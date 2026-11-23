@@ -3,6 +3,13 @@ main = "src/index.js"
 compatibility_date = "2025-03-20"
 compatibility_flags = ["nodejs_compat"]
 
+# ── Cloudflare D1 Database Binding ──
+[[d1_databases]]
+binding = "DB"
+database_name = "cameci-db"
+database_id = "70e6bf0b-a956-45dc-800c-3eb8e34c39b6"
+migrations_dir = "drizzle/migrations"
+
 # ── R2 Bucket Binding ──
 [[r2_buckets]]
 binding = "R2_BUCKET"
@@ -13,11 +20,11 @@ bucket_name = "grupocameci-imagenes"
 R2_PUBLIC_URL = "https://imagenes.grupocameci.com"
 EMAIL_TO = "contacto.grupocameci@gmail.com"
 
-# ── Secrets (se configuran con: npx wrangler secret put <NOMBRE>) ──
-# MONGO_URI     → tu connection string de MongoDB Atlas
-# RESEND_API_KEY → tu API Key de Resend
+# ── Secrets ──
+# Configurar en terminal ejecutando: npx wrangler secret put RESEND_API_KEY
+# (MONGO_URI ya no es necesario gracias a Cloudflare D1)
 
-# ── Routes (descomentar cuando el dominio esté en Cloudflare DNS) ──
+# ── Routes (Descomentar únicamente cuando grupocameci.com esté activo en Cloudflare DNS) ──
 # routes = [
 #   { pattern = "grupocameci.com/api/*", zone_name = "grupocameci.com" }
 # ]

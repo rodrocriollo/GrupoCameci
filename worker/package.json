@@ -4,14 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "dev": "wrangler dev --config ./wrangler.toml",
+    "deploy": "wrangler deploy --config ./wrangler.toml"
   },
   "dependencies": {
-    "hono": "^4.7.0",
-    "mongodb": "^6.12.0"
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.7.0"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.11",
     "wrangler": "^4.0.0"
   }
 }
