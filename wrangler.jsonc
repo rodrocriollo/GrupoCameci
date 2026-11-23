@@ -1,11 +1,8 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "grupocameci",
-	"main": "worker/index.js",
+	"main": "worker/src/index.js",
 	"compatibility_date": "2026-06-28",
-	"observability": {
-		"enabled": true
-	},
 	"assets": {
 		"directory": "frontend",
 		"binding": "ASSETS"
